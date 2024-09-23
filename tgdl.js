@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         dogeclick
+// @name         tgdl
 // @namespace    http://tampermonkey.net/
 // @version      1.3
 // @description  模拟鼠标点击
