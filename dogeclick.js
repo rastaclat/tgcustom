@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         dogeclick
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
-// @updateURL    https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/dogeclick.js
-// @downloadURL  https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/dogeclick.js
+// @updateURL    https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
+// @downloadURL  https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
 // @grant        none
 // ==/UserScript==
 
@@ -32,7 +32,9 @@
                 });
                 element.dispatchEvent(event);
             });
-        } catch (error) {}
+        } catch (error) {
+            console.error('Click simulation error:', error);
+        }
     }
 
     function getValues() {
@@ -49,7 +51,11 @@
 
     function clickSpecificArea() {
         const specificArea = document.querySelector('div[data-testid="tap_doge"]');
-        if (specificArea) simulateRealMouseClick(specificArea);
+        if (specificArea) {
+            simulateRealMouseClick(specificArea);
+            return true;
+        }
+        return false;
     }
 
     function randomDelay(min, max) {
@@ -57,11 +63,13 @@
     }
 
     async function clickUntilZero() {
-        while (true) {
+        let attempts = 0;
+        while (attempts < 50) {  // 限制尝试次数
             const values = getValues();
             if (!values || values.current === 0) break;
-            clickSpecificArea();
+            if (!clickSpecificArea()) break;
             await new Promise(resolve => setTimeout(resolve, randomDelay(50, 100)));
+            attempts++;
         }
         scheduleNextCheck();
     }
@@ -80,12 +88,24 @@
         checkTimeout = setTimeout(checkAndClick, randomDelay(15000, 30000));
     }
 
-    const observer = new MutationObserver(() => {});
-    const config = { childList: true, subtree: true };
+    function waitForElement(selector, callback, maxAttempts = 10, interval = 1000) {
+        let attempts = 0;
+        const checkElement = () => {
+            const element = document.querySelector(selector);
+            if (element) {
+                callback(element);
+            } else if (++attempts < maxAttempts) {
+                setTimeout(checkElement, interval);
+            }
+        };
+        checkElement();
+    }
 
     function init() {
-        observer.observe(document.body, config);
-        setTimeout(scheduleNextCheck, 2000);
+        waitForElement('div[data-testid="tap_doge"]', (element) => {
+            simulateRealMouseClick(element);
+            scheduleNextCheck();
+        });
     }
 
     if (document.readyState === 'loading') {
@@ -93,4 +113,12 @@
     } else {
         init();
     }
+
+    // 监听页面变化，在每次加载新内容时尝试点击
+    const observer = new MutationObserver(() => {
+        waitForElement('div[data-testid="tap_doge"]', (element) => {
+            simulateRealMouseClick(element);
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
 })();
