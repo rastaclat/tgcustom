@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Advanced Continuous Clicker for Baby Doge
 // @namespace    http://tampermonkey.net/
-// @version      3.1
+// @version      1.0
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
