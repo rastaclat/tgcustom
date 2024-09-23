@@ -1,12 +1,13 @@
 // ==UserScript==
-// @name         Advanced Continuous Clicker for Baby Doge
+// @name         dogeclick
 // @namespace    http://tampermonkey.net/
 // @version      1.1
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
-// @updateURL    https://github.com/rastaclat/tgcustom/edit/main/dog2click.js
-// @downloadURL  https://github.com/rastaclat/tgcustom/edit/main/dog2click.js
+// @updateURL    https://raw.githubusercontent.com/rastaclat/tgcustom/main/dogeclick.js
+// @downloadURL  https://raw.githubusercontent.com/rastaclat/tgcustom/main/dogeclick.js
+
 // @grant        none
 // ==/UserScript==
 
