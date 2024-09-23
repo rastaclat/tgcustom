@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Advanced Continuous Clicker for Baby Doge
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
@@ -83,7 +83,7 @@
                     break;
                 }
                 clickSpecificArea();
-                await new Promise(resolve => setTimeout(resolve, randomDelay(100, 800)));
+                await new Promise(resolve => setTimeout(resolve, randomDelay(50, 200)));
             }
         } catch (error) {
             console.error('点击过程中出错:', error);
