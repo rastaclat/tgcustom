@@ -5,6 +5,8 @@
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
+// @updateURL    https://github.com/rastaclat/tgcustom/edit/main/dog2click.js
+// @downloadURL  https://github.com/rastaclat/tgcustom/edit/main/dog2click.js
 // @grant        none
 // ==/UserScript==
 
