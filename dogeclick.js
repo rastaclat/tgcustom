@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         dogeclick
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
@@ -84,7 +84,7 @@
                     break;
                 }
                 clickSpecificArea();
-                await new Promise(resolve => setTimeout(resolve, randomDelay(50, 200)));
+                await new Promise(resolve => setTimeout(resolve, randomDelay(50, 100)));
             }
         } catch (error) {
             console.error('点击过程中出错:', error);
