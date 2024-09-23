@@ -1,77 +1,91 @@
 // ==UserScript==
-// @name         tgdl
-// @version      1.1
-// @description  tgdl
-// @author       qtq
-// @match        https://web.telegram.org/*/*
-// @match        https://*.tomarket.ai/*
-// @match        https://babydogeclikerbot.com/*
-// @match        https://*.babydogepawsbot.com/*
-// @grant        none
-// @downloadURL  https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/tgdl.js
+// @name         dogeclick
+// @namespace    http://tampermonkey.net/
+// @version      1.3
+// @description  模拟鼠标点击
+// @author       You
+// @match        https://*.babydogeclikerbot.com/*
 // @updateURL    https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/tgdl.js
-// @icon         https://web.telegram.org/favicon.ico
+// @downloadURL  https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/tgdl.js
+// @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    function updateIframeSrc() {
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            let originalSrc = iframe.src;
-            let newSrc = originalSrc
-                .replace(/tgWebAppPlatform=(weba|web)/g, 'tgWebAppPlatform=ios')
-                .replace(/^http:/, 'https:');
+    const newUserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1';
+    Object.defineProperty(navigator, 'userAgent', { get: function() { return newUserAgent; } });
 
-            if (newSrc !== originalSrc) {
-                iframe.src = newSrc;
-                console.log('iframe src 已更新:', newSrc);
-            }
+    let checkTimeout = null;
 
-            // 修改sandbox属性以允许脚本执行
-            if (iframe.hasAttribute('sandbox')) {
-                let sandboxValue = iframe.getAttribute('sandbox');
-                if (!sandboxValue.includes('allow-scripts')) {
-                    iframe.setAttribute('sandbox', sandboxValue + ' allow-scripts');
-                }
-            }
-        });
+    function simulateRealMouseClick(element) {
+        if (!element) return;
+        try {
+            const rect = element.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            ['mousedown', 'mouseup', 'click'].forEach(eventType => {
+                const event = new MouseEvent(eventType, {
+                    bubbles: true, cancelable: true, view: window,
+                    button: 0, buttons: eventType === 'mousedown' ? 1 : 0,
+                    clientX: x, clientY: y
+                });
+                element.dispatchEvent(event);
+            });
+        } catch (error) {}
     }
 
-    function checkAndReload() {
-        const contentToCheck = [
-            'Play on your mobile',
-            '在您的移动设备上玩',
-            'Spielen Sie auf Ihrem Mobilgerät',
-            'Jouez sur votre mobile'
-        ];
-
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            // 使用postMessage来与iframe通信
-            iframe.contentWindow.postMessage({type: 'checkContent', phrases: contentToCheck}, '*');
-        });
+    function getValues() {
+        const valueElement = document.querySelector('.text-babydoge-white.text-12-bold p');
+        if (valueElement) {
+            const values = valueElement.textContent.split('/');
+            return {
+                current: parseInt(values[0], 10),
+                total: parseInt(values[1], 10)
+            };
+        }
+        return null;
     }
 
-    function safeExecute() {
-        updateIframeSrc();
-        checkAndReload();
+    function clickSpecificArea() {
+        const specificArea = document.querySelector('div[data-testid="tap_doge"]');
+        if (specificArea) simulateRealMouseClick(specificArea);
     }
+
+    function randomDelay(min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    async function clickUntilZero() {
+        while (true) {
+            const values = getValues();
+            if (!values || values.current === 0) break;
+            clickSpecificArea();
+            await new Promise(resolve => setTimeout(resolve, randomDelay(50, 100)));
+        }
+        scheduleNextCheck();
+    }
+
+    async function checkAndClick() {
+        const values = getValues();
+        if (values && values.current / values.total > 0.2) {
+            await clickUntilZero();
+        } else {
+            scheduleNextCheck();
+        }
+    }
+
+    function scheduleNextCheck() {
+        if (checkTimeout) clearTimeout(checkTimeout);
+        checkTimeout = setTimeout(checkAndClick, randomDelay(15000, 30000));
+    }
+
+    const observer = new MutationObserver(() => {});
+    const config = { childList: true, subtree: true };
 
     function init() {
-        safeExecute();
-        setInterval(safeExecute, 5000);
-
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                    safeExecute();
-                }
-            });
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
+        observer.observe(document.body, config);
+        setTimeout(scheduleNextCheck, 2000);
     }
 
     if (document.readyState === 'loading') {
@@ -79,38 +93,4 @@
     } else {
         init();
     }
-
-    // 捕获并忽略特定错误
-    window.addEventListener('error', function(event) {
-        if (event.message.includes('Syntax error, unrecognized expression: #tgWebAppData')) {
-            event.preventDefault();
-            console.warn('忽略了一个已知的语法错误');
-        }
-    }, true);
-
-    // 监听来自iframe的消息
-    window.addEventListener('message', function(event) {
-        if (event.data.type === 'contentFound') {
-            console.log('检测到目标内容，正在尝试重新加载...');
-            setTimeout(() => {
-                event.source.location.reload();
-            }, 2000);
-        }
-    }, false);
-
-    // 注入iframe内容检查脚本
-    const script = document.createElement('script');
-    script.textContent = `
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'checkContent') {
-                const bodyText = document.body.textContent || document.body.innerText;
-                if (event.data.phrases.some(phrase => bodyText.includes(phrase))) {
-                    window.parent.postMessage({type: 'contentFound'}, '*');
-                }
-            }
-        }, false);
-    `;
-    document.head.appendChild(script);
-
-    // 移除了可能引起问题的CSP修改代码
 })();
