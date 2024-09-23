@@ -1,75 +1,55 @@
 // ==UserScript==
 // @name         dogeclick
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  模拟鼠标点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
 // @updateURL    https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
 // @downloadURL  https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
-
 // @grant        none
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // 模拟iOS设备
     const newUserAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1';
-    Object.defineProperty(navigator, 'userAgent', {
-        get: function() { return newUserAgent; }
-    });
+    Object.defineProperty(navigator, 'userAgent', { get: function() { return newUserAgent; } });
 
     let checkTimeout = null;
 
     function simulateRealMouseClick(element) {
+        if (!element) return;
         try {
             const rect = element.getBoundingClientRect();
             const x = rect.left + rect.width / 2;
             const y = rect.top + rect.height / 2;
-            const events = ['mousedown', 'mouseup', 'click'];
-            events.forEach(eventType => {
+            ['mousedown', 'mouseup', 'click'].forEach(eventType => {
                 const event = new MouseEvent(eventType, {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window,
-                    button: 0,
-                    buttons: eventType === 'mousedown' ? 1 : 0,
-                    clientX: x,
-                    clientY: y
+                    bubbles: true, cancelable: true, view: window,
+                    button: 0, buttons: eventType === 'mousedown' ? 1 : 0,
+                    clientX: x, clientY: y
                 });
                 element.dispatchEvent(event);
             });
-        } catch (error) {
-            console.error('模拟点击时出错:', error);
-        }
+        } catch (error) {}
     }
 
     function getValues() {
-        try {
-            const valueElement = document.querySelector('.text-babydoge-white.text-12-bold p');
-            if (valueElement) {
-                const values = valueElement.textContent.split('/');
-                return {
-                    current: parseInt(values[0], 10),
-                    total: parseInt(values[1], 10)
-                };
-            }
-        } catch (error) {
-            console.error('获取值时出错:', error);
+        const valueElement = document.querySelector('.text-babydoge-white.text-12-bold p');
+        if (valueElement) {
+            const values = valueElement.textContent.split('/');
+            return {
+                current: parseInt(values[0], 10),
+                total: parseInt(values[1], 10)
+            };
         }
         return null;
     }
 
     function clickSpecificArea() {
-        try {
-            const specificArea = document.querySelector('div[data-testid="tap_doge"]');
-            if (specificArea) {
-                simulateRealMouseClick(specificArea);
-            }
-        } catch (error) {
-            console.error('点击特定区域时出错:', error);
-        }
+        const specificArea = document.querySelector('div[data-testid="tap_doge"]');
+        if (specificArea) simulateRealMouseClick(specificArea);
     }
 
     function randomDelay(min, max) {
@@ -77,60 +57,40 @@
     }
 
     async function clickUntilZero() {
-        try {
-            while (true) {
-                const values = getValues();
-                if (!values || values.current === 0) {
-                    break;
-                }
-                clickSpecificArea();
-                await new Promise(resolve => setTimeout(resolve, randomDelay(50, 100)));
-            }
-        } catch (error) {
-            console.error('点击过程中出错:', error);
+        while (true) {
+            const values = getValues();
+            if (!values || values.current === 0) break;
+            clickSpecificArea();
+            await new Promise(resolve => setTimeout(resolve, randomDelay(50, 100)));
         }
         scheduleNextCheck();
     }
 
     async function checkAndClick() {
-        try {
-            const values = getValues();
-            if (values) {
-                const ratio = values.current / values.total;
-                if (ratio > 0.2) {
-                    await clickUntilZero();
-                    return;
-                }
-            }
-        } catch (error) {
-            console.error('检查和点击过程中出错:', error);
+        const values = getValues();
+        if (values && values.current / values.total > 0.2) {
+            await clickUntilZero();
+        } else {
+            scheduleNextCheck();
         }
-        scheduleNextCheck();
     }
 
     function scheduleNextCheck() {
-        if (checkTimeout) {
-            clearTimeout(checkTimeout);
-        }
-        const nextCheckDelay = randomDelay(15000, 30000);
-        checkTimeout = setTimeout(checkAndClick, nextCheckDelay);
+        if (checkTimeout) clearTimeout(checkTimeout);
+        checkTimeout = setTimeout(checkAndClick, randomDelay(15000, 30000));
     }
 
-    const observer = new MutationObserver(function(mutations) {
-        // 观察DOM变化，但不执行操作
-    });
+    const observer = new MutationObserver(() => {});
+    const config = { childList: true, subtree: true };
 
-    const config = {
-        childList: true,
-        subtree: true
-    };
+    function init() {
+        observer.observe(document.body, config);
+        setTimeout(scheduleNextCheck, 2000);
+    }
 
-    window.addEventListener('load', () => {
-        try {
-            observer.observe(document.body, config);
-            scheduleNextCheck();
-        } catch (error) {
-            console.error('初始化过程中出错:', error);
-        }
-    });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();
