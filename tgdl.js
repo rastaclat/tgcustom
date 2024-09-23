@@ -8,8 +8,8 @@
 // @match        https://*.babydogeclikerbot.com/*
 // @match        https://*.babydogepawsbot.com/*
 // @grant        none
-// @downloadURL  https://github.com/rastaclat/tgcustom/main/tgdl.js
-// @updateURL    https://github.com/rastaclat/tgcustom/main/tgdl.js
+// @downloadURL  https://github.com/rastaclat/tgcustom/blob/main/tgdl.js
+// @updateURL    https://github.com/rastaclat/tgcustom/blob/main/tgdl.js
 // @homepage     https://github.com/rastaclat/tgcustom
 // @icon         https://web.telegram.org/favicon.ico
 // ==/UserScript==
