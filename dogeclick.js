@@ -5,8 +5,8 @@
 // @description  模拟鼠标点击,只在比例大于0.2时点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
-// @updateURL    https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
-// @downloadURL  https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
+// @updateURL    https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/dogeclick.js
+// @downloadURL  https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/dogeclick.js
 // @grant        none
 // ==/UserScript==
 
