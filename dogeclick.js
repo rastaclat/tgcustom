@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         dogeclick
 // @namespace    http://tampermonkey.net/
-// @version      1.4
-// @description  模拟鼠标点击
+// @version      1.5
+// @description  模拟鼠标点击,只在比例大于0.2时点击
 // @author       You
 // @match        https://*.babydogeclikerbot.com/*
 // @updateURL    https://github.com/rastaclat/tgcustom/blob/main/dogeclick.js
@@ -66,7 +66,7 @@
         let attempts = 0;
         while (attempts < 50) {  // 限制尝试次数
             const values = getValues();
-            if (!values || values.current === 0) break;
+            if (!values || values.current === 0 || values.current / values.total <= 0.2) break;
             if (!clickSpecificArea()) break;
             await new Promise(resolve => setTimeout(resolve, randomDelay(50, 100)));
             attempts++;
@@ -79,13 +79,13 @@
         if (values && values.current / values.total > 0.2) {
             await clickUntilZero();
         } else {
-            scheduleNextCheck();
+            scheduleNextCheck(60000); // 如果比例不大于0.2，1分钟后再次检查
         }
     }
 
-    function scheduleNextCheck() {
+    function scheduleNextCheck(delay = randomDelay(15000, 30000)) {
         if (checkTimeout) clearTimeout(checkTimeout);
-        checkTimeout = setTimeout(checkAndClick, randomDelay(15000, 30000));
+        checkTimeout = setTimeout(checkAndClick, delay);
     }
 
     function waitForElement(selector, callback, maxAttempts = 10, interval = 1000) {
@@ -103,8 +103,7 @@
 
     function init() {
         waitForElement('div[data-testid="tap_doge"]', (element) => {
-            simulateRealMouseClick(element);
-            scheduleNextCheck();
+            checkAndClick(); // 初始化时直接检查并点击（如果需要）
         });
     }
 
@@ -114,10 +113,10 @@
         init();
     }
 
-    // 监听页面变化，在每次加载新内容时尝试点击
+    // 监听页面变化，在每次加载新内容时检查并点击（如果需要）
     const observer = new MutationObserver(() => {
-        waitForElement('div[data-testid="tap_doge"]', (element) => {
-            simulateRealMouseClick(element);
+        waitForElement('div[data-testid="tap_doge"]', () => {
+            checkAndClick();
         });
     });
     observer.observe(document.body, { childList: true, subtree: true });
