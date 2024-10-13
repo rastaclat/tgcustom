@@ -1,13 +1,10 @@
 
 // ==UserScript==
 // @name         tgdl
-// @version      1.0
+// @version      1.3
 // @description  tgdl
 // @author       qtq
 // @match        https://web.telegram.org/*/*
-// @match        https://*.tomarket.ai/*
-// @match        https://*.babydogeclikerbot.com/*
-// @match        https://*.babydogepawsbot.com/*
 // @grant        none
 // @downloadURL  https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/tgdl.js
 // @updateURL    https://raw.githubusercontent.com/rastaclat/tgcustom/refs/heads/main/tgdl.js
